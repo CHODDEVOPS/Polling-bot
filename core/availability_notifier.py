@@ -2,8 +2,7 @@ import time
 import requests
 import datetime as dt
 from bs4 import BeautifulSoup
-from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+
 
 # Global constants
 TELEGRAM_BOT_TOKEN = ""
@@ -33,12 +32,6 @@ def check_website(url: str, dates_list: list) -> bool:
 
     # Return if there is at least one true date in the list
     return any(element_list)
-
-
-def send_notification(text: str):
-    updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
-    updater.bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=text)
-
 
 def polling_bot(dates_list: list):
     while True:
