@@ -15,9 +15,6 @@ poetry-download:
 install:
 	poetry install -n
 	poetry run mypy --install-types --non-interactive $(CODE)
-
-.PHONY: pre-commit-install
-pre-commit-install:
 	pre-commit install
 
 .PHONY: check-mypy
