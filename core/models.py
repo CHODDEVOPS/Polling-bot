@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from pydantic import BaseModel
 
@@ -20,4 +19,4 @@ class AvailableTimeSlots(BaseModel):
     ```
     """
 
-    __root__: List[datetime]
+    __root__: list[datetime]

@@ -1,7 +1,7 @@
-import time
 import sys
-import requests
 from datetime import datetime, timedelta
+
+import requests
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt, wait_fixed
 
@@ -17,6 +17,7 @@ class TerminBremenScraper:
         self.first_page = ""
         self.second_page = ""
         self.final_page = ""
+
     def generate_dates_list(self):
         """
         Generate a list containing the dates for the next 3 weeks to check for available time-slots.
@@ -36,22 +37,22 @@ class TerminBremenScraper:
         Generate the headers for the request.
         """
         return {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-            'Cache-Control': 'max-age=0',
-            'Connection': 'keep-alive',
-            'Cookie': f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}",
-            'If-Modified-Since': 'Thu, 20 Apr 2023 18:47:29 GMT',
-            'Referer': 'https://termin.bremen.de/termine/select2?md=5',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-User': '?1',
-            'Upgrade-Insecure-Requests': '1',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
-            'sec-ch-ua': '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
-            'sec-ch-ua-mobile': '?1',
-            'sec-ch-ua-platform': '"Android"',
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
+            "Cookie": f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}",
+            "If-Modified-Since": "Thu, 20 Apr 2023 18:47:29 GMT",
+            "Referer": "https://termin.bremen.de/termine/select2?md=5",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36",
+            "sec-ch-ua": '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+            "sec-ch-ua-mobile": "?1",
+            "sec-ch-ua-platform": '"Android"',
         }
 
     def get_available_dates(self, page) -> list:
@@ -72,7 +73,7 @@ class TerminBremenScraper:
 
         response = session.get(self.first_page)
         cookie = session.cookies.get_dict()
-        headers['Cookie'] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
+        headers["Cookie"] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
 
         response = requests.get(self.second_page, headers=headers)
 
@@ -84,7 +85,7 @@ class TerminBremenScraper:
 
         cookie = session.cookies.get_dict()
 
-        headers['Cookie'] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
+        headers["Cookie"] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
 
         final_page = requests.get(self.final_page, headers=headers)
 
@@ -95,10 +96,10 @@ class TerminBremenScraper:
         Parse the available dates and time slots from the HTML content.
         """
         datetime_list = []
-        doc = BeautifulSoup(page_content, 'html.parser')
+        doc = BeautifulSoup(page_content, "html.parser")
 
         # Find all h3 elements with the dates
-        date_elements = doc.find_all('h3', {'class': 'ui-accordion-header'})
+        date_elements = doc.find_all("h3", {"class": "ui-accordion-header"})
 
         if not date_elements:
             print("Dates not found")
@@ -111,11 +112,11 @@ class TerminBremenScraper:
                 date_obj = datetime.strptime(date_text, "%A, %m/%d/%Y")
 
                 # Find the next sibling (the div containing the time table)
-                time_table_div = date_element.find_next_sibling('div')
+                time_table_div = date_element.find_next_sibling("div")
 
                 # Find the table element with the time buttons
-                time_table = time_table_div.find('table', {'class': 'sugg_table'})
-                time_buttons = time_table.find_all('button', {'class': 'suggest_btn'})
+                time_table = time_table_div.find("table", {"class": "sugg_table"})
+                time_buttons = time_table.find_all("button", {"class": "suggest_btn"})
 
                 for btn in time_buttons:
                     # Get the time text
@@ -125,27 +126,36 @@ class TerminBremenScraper:
                     time_obj = datetime.strptime(time_text, "%H:%M")
 
                     # Combine the date and time into a single datetime object
-                    datetime_obj = date_obj.replace(hour=time_obj.hour, minute=time_obj.minute)
+                    datetime_obj = date_obj.replace(
+                        hour=time_obj.hour, minute=time_obj.minute
+                    )
 
                     # Add the datetime object to the list
                     datetime_list.append(datetime_obj)
 
         return datetime_list
 
-    @retry(stop=stop_after_attempt(10), wait=wait_fixed(30),
-           retry_error_callback=lambda _: print("Failed to retrieve dates after 10 trials."))
+    @retry(
+        stop=stop_after_attempt(10),
+        wait=wait_fixed(30),
+        retry_error_callback=lambda _: print(
+            "Failed to retrieve dates after 10 trials."
+        ),
+    )
     def run(self):
         """
         Run the scraper with tenacity retries (10 times every 30 seconds).
         """
         available_dates = self.get_available_dates()
         if not available_dates:
-            print("The dates are not available on the website. Trying again in 60 seconds")
+            print(
+                "The dates are not available on the website. Trying again in 60 seconds"
+            )
             raise Exception("Empty date list")
 
         print(f"Successfully retrieved dates: {available_dates}")
 
+
 if __name__ == "__main__":
     scraper = TerminBremenScraper()
     scraper.run(page="mitte")
-
