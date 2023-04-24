@@ -3,6 +3,7 @@ import sys
 import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 
 class TerminBremenScraper:
@@ -131,25 +132,18 @@ class TerminBremenScraper:
 
         return datetime_list
 
-    def run(self, page, trials=20, interval=30):
+    @retry(stop=stop_after_attempt(10), wait=wait_fixed(30),
+           retry_error_callback=lambda _: print("Failed to retrieve dates after 10 trials."))
+    def run(self):
         """
-        Run the scraper for a specific number of trials with a specified interval between each trial.
+        Run the scraper with tenacity retries (10 times every 30 seconds).
         """
-        for i in range(1, trials + 1):
-            try:
-                available_dates = self.get_available_dates(page)
-                if available_dates:
-                    print(f"Trial {i}: Successfully retrieved dates: {available_dates}")
-                    break
-                else:
-                    print(f"Trial {i}: The dates are not available on the website. Trying again in {interval} seconds")
-            except Exception as e:
-                print(f"Trial {i}: An error occurred while retrieving dates. Error: {e}. Trying again in {interval} seconds")
+        available_dates = self.get_available_dates()
+        if not available_dates:
+            print("The dates are not available on the website. Trying again in 60 seconds")
+            raise Exception("Empty date list")
 
-            if i < trials:
-                time.sleep(interval)
-            else:
-                print(f"Failed to retrieve dates after {trials} trials.")
+        print(f"Successfully retrieved dates: {available_dates}")
 
 if __name__ == "__main__":
     scraper = TerminBremenScraper()
