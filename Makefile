@@ -5,6 +5,12 @@ PYTHON := python
 #* Directories with source code
 CODE = core
 
+#* Include environment variables if .env exists
+ifneq ("$(wildcard .env)","")
+	include .env
+	export
+endif
+
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -28,3 +34,9 @@ codestyle:
 	autoflake --recursive --in-place --remove-all-unused-imports --ignore-init-module-imports $(CODE)
 	isort --settings-path pyproject.toml $(CODE)
 	black --config pyproject.toml $(CODE)
+
+
+#* Run
+.PHONY: run
+run:
+	poetry run python3 -m core

@@ -14,6 +14,7 @@ pyupgrade = "^3.3.1"
 autoflake = "^2.0.2"
 python-telegram-bot = "^20.2"
 pydantic = "^1.10.7"
+loguru = "^0.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,3 +25,59 @@ pylint = "^2.17.2"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+
+
+[tool.isort]
+# https://github.com/timothycrosley/isort/
+py_version = 39
+line_length = 120
+
+known_typing = ["typing", "types", "typing_extensions", "mypy", "mypy_extensions"]
+sections = ["FUTURE", "TYPING", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+include_trailing_comma = true
+profile = "black"
+multi_line_output = 3
+indent = 4
+color_output = true
+
+[tool.mypy]
+# https://mypy.readthedocs.io/en/latest/config_file.html#using-a-pyproject-toml-file
+python_version = 3.9
+pretty = true
+show_traceback = true
+color_output = true
+plugins = [
+  "pydantic.mypy"
+]
+
+allow_redefinition = false
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+implicit_reexport = true
+no_implicit_optional = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+strict_equality = true
+strict_optional = true
+warn_no_return = false
+warn_redundant_casts = true
+warn_return_any = false
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = false
+
+[tool.pydantic-mypy]
+# https://pydantic-docs.helpmanual.io/mypy_plugin/#configuring-the-plugin
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
