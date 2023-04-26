@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+from availability_notifier import TerminBremenScraper
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -15,7 +15,12 @@ async def send_dates_as_buttons(
         return
 
     chat_id = update.message.chat_id
-    date_list = [datetime.today() + timedelta(days=x) for x in range(7)]
+
+    # Call the parse_dates function and get the date_time_dict
+    parser = TerminBremenScraper()
+    date_time_dict = parser.run(page="polizei")
+
+    # Iterate over the date_time_dict to create the InlineKeyboardButton for each date
     date_keyboard = [
         [
             InlineKeyboardButton(
@@ -23,12 +28,13 @@ async def send_dates_as_buttons(
                 url="http://example.com/" + date.strftime("%Y-%m-%d"),
             )
         ]
-        for date in date_list
+        for date in date_time_dict.keys()
     ]
     reply_markup = InlineKeyboardMarkup(date_keyboard)
     await context.bot.send_message(
-        chat_id=chat_id, text="Here are the next 7 dates:", reply_markup=reply_markup
+        chat_id=chat_id, text="Here are the next available dates:", reply_markup=reply_markup
     )
+
 
 
 app = ApplicationBuilder().token(settings.bot.token).build()
