@@ -1,7 +1,9 @@
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+
 import requests
 from bs4 import BeautifulSoup
+from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 
@@ -54,11 +56,13 @@ class TerminBremenScraper:
             "sec-ch-ua-platform": '"Android"',
         }
 
-    def get_available_dates(self, page) -> list:
+    def get_available_dates(self, page) -> dict[date, list[str]]:
         """
         Get the available dates and time slots from the website.
         """
         session = requests.Session()
+
+        logger.debug("Making request to {}", self.URL1)
         response = session.get(self.URL1)
         cookie = session.cookies.get_dict()
         headers = self.get_headers(cookie)
@@ -73,27 +77,32 @@ class TerminBremenScraper:
             self.first_page = "https://termin.bremen.de/termine/select2?md=6"
             self.second_page = "https://termin.bremen.de/termine/suggest?mdt=702&select_cnc=1&cnc-8626=0&cnc-8627=0&cnc-8628=0&cnc-8650=0&cnc-8604=0&cnc-8629=0&cnc-8633=0&cnc-8619=0&cnc-8647=0&cnc-8651=0&cnc-8652=0&cnc-8801=0&cnc-8800=0&cnc-8793=1&cnc-8637=0&cnc-8639=0&cnc-8605=0&cnc-8606=0&cnc-8607=0&cnc-8608=0&cnc-8609=0&cnc-8610=0&cnc-8611=0&cnc-8613=0&cnc-8631=0&cnc-8649=0&cnc-8603=0&cnc-8616=0&cnc-8620=0&cnc-8621=0&cnc-8622=0&cnc-8623=0&cnc-8624=0&cnc-8648=0&cnc-8630=0&cnc-8632=0&cnc-8634=0&cnc-8612=0&cnc-8641=0&cnc-8642=0&cnc-8643=0&cnc-8644=0&cnc-8645=0&cnc-8601=0&cnc-8602=0&cnc-8617=0&cnc-8615=0&cnc-8614=0&cnc-8618=0&cnc-8625=0&cnc-8653=0&cnc-8646=0"
 
+        logger.debug("Making request to {}", self.first_page)
         response = session.get(self.first_page)
         cookie = session.cookies.get_dict()
         headers["Cookie"] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
 
+        logger.debug("Making request to {}", self.second_page)
         response = requests.get(self.second_page, headers=headers)
 
         if response.status_code == 200:
             self.final_page = response.url
         else:
-            print(f"Error: {response.status_code}")
+            logger.info(f"Error: {response.status_code}")
             sys.exit()
 
         cookie = session.cookies.get_dict()
 
         headers["Cookie"] = f"cookie_accept=1; TVWebSession={cookie['TVWebSession']}"
 
+        logger.debug("Making request to {}", self.final_page)
         final_page = requests.get(self.final_page, headers=headers)
+
+        logger.debug("Raw response {}", final_page)
 
         return self.parse_dates(final_page.text)
 
-    def parse_dates(self, page_content):
+    def parse_dates(self, page_content) -> dict[date, list[str]]:
         """
         Parse the available dates and time slots from the HTML content.
         """
@@ -117,7 +126,7 @@ class TerminBremenScraper:
         }
 
         if not date_elements:
-            print("Dates not found")
+            logger.info("Dates not found")
         else:
             for date_element in date_elements:
                 # Get the date text
@@ -140,7 +149,7 @@ class TerminBremenScraper:
                 time_list = []
 
                 for btn in time_buttons:
-                    if not btn.has_attr('disabled'):
+                    if not btn.has_attr("disabled"):
                         # Get the time text
                         time_text = btn.text.strip()
 
@@ -152,26 +161,33 @@ class TerminBremenScraper:
 
         return date_time_dict
 
-
     @retry(
         stop=stop_after_attempt(10),
         wait=wait_fixed(30),
-        retry_error_callback=lambda _: print(
+        before_sleep=lambda _: logger.debug("Retrying a scraper run due to a fault"),
+        retry_error_callback=lambda _: logger.info(
             "Failed to retrieve dates after 10 trials."
         ),
     )
-    def run(self, page):
+    def run(self, page) -> dict[date, list[str]]:
         """
         Run the scraper with tenacity retries (retry every 30 seconds 10 times).
         """
-        available_dates = self.get_available_dates(page)
+        try:
+            available_dates = self.get_available_dates(page)
+        except Exception as exc:
+            logger.error("Failed to get available dates {}", repr(exc))
+            logger.exception(exc)
+            raise exc
+
         if not available_dates:
-            print(
+            logger.info(
                 "The dates are not available on the website. Trying again in 60 seconds"
             )
             raise Exception("Empty date list")
 
-        print(f"Successfully retrieved dates: {available_dates}")
+        logger.info(f"Successfully retrieved dates: {available_dates}")
+        return available_dates
 
 
 if __name__ == "__main__":
