@@ -3,31 +3,26 @@ from ast import List
 
 import firebase
 import firebase_admin
-
 from firebase_admin import firestore
 
 
 class BaseFirebaseRepository:
-
     def __init__(self, credentials: dict) -> None:
         cred = firebase.credentials.Certificate(credentials)
         self.app = firebase_admin.initialize_app(cred)
 
 
 class UserRepository(ABC):
-
-
     @abstractmethod
-    def get_list_of_users(self) -> List[int]:
+    def get_list_of_users(self) -> List[str]:
         ...
 
     @abstractmethod
-    def create_user(self, chat_id: int):
+    def create_user(self, chat_id: str):
         ...
 
 
 class UserFirebaseRepository(BaseFirebaseRepository, UserRepository):
-
     db_name: str = "burger-users"
 
     def __init__(self, credentials: dict) -> None:
@@ -40,5 +35,3 @@ class UserFirebaseRepository(BaseFirebaseRepository, UserRepository):
 
     def create_user(self, chat_id: int):
         pass
-
-    
