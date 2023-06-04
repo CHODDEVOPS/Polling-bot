@@ -6,7 +6,7 @@ A simple polling bot to check for available time slots on the termin.bremen.de w
 
 `make shell`
 
-# How to user User repository
+# How to use User repository
 
 Make sure you have google credentials file in the root of the project named `google.json`.
 
