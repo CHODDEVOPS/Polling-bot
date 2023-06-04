@@ -2,6 +2,7 @@ from typing import Any
 
 import json
 
+from loguru import logger
 from pydantic import BaseSettings
 
 
@@ -10,7 +11,12 @@ class GoogleSettings(BaseSettings):
 
     @property
     def credentials(self) -> dict[Any, Any]:
-        return json.load(open(self.application_credentials))
+        try:
+            return json.load(open(self.application_credentials))
+        except FileNotFoundError as exc:
+            msg = "Google credentials file `google.json` was not found. Please, put it into the project root"
+            logger.error(msg)
+            raise ValueError(msg) from exc
 
     class Config:
         env_prefix = "GOOGLE_"
