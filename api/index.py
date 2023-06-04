@@ -4,7 +4,6 @@ import signup
 
 
 class handler(BaseHTTPRequestHandler):
-
-    def do_POST(self):
+    def do_POST(self) -> None:
         signup.run_polling()
         return
