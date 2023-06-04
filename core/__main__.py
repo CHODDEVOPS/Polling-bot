@@ -26,6 +26,7 @@ class StatelessFirebaseRepository:
         users_ref = self.client.collection("burger-users")
         users_ref.document(str(user_id)).set({"id": user_id}, merge=True)
 
+
 async def broadcast_dates() -> None:
     user_repo = UserFirebaseRepository(credentials=settings.firebase.credentials)
     logger.info("Fetching user list...")
@@ -68,7 +69,6 @@ async def broadcast_dates() -> None:
             },
         )
     logger.info("Broadcasted dates to all users!")
-
 
 
 asyncio.run(broadcast_dates())
