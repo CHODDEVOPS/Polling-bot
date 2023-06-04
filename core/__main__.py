@@ -22,6 +22,9 @@ class StatelessFirebaseRepository:
         docs = users_ref.stream()
         return [doc.to_dict() for doc in docs]
 
+    def register_user(self, user_id: int) -> None:
+        users_ref = self.client.collection("burger-users")
+        users_ref.document(str(user_id)).set({"id": user_id}, merge=True)
 
 async def broadcast_dates() -> None:
     user_repo = UserFirebaseRepository(credentials=settings.firebase.credentials)
@@ -65,6 +68,7 @@ async def broadcast_dates() -> None:
             },
         )
     logger.info("Broadcasted dates to all users!")
+
 
 
 asyncio.run(broadcast_dates())

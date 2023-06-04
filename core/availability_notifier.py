@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-
 class TerminBremenScraper:
     TELEGRAM_BOT_TOKEN = ""
     TELEGRAM_CHAT_ID = ""
