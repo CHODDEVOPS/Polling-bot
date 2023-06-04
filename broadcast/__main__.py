@@ -6,9 +6,9 @@ from firebase_admin import credentials, firestore
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from core.availability_notifier import TerminBremenScraper
-from core.config import settings
-from core.repository.firebase import UserFirebaseRepository
+from broadcast.availability_notifier import TerminBremenScraper
+from common.repository.firebase import UserFirebaseRepository
+from config import settings
 
 
 class StatelessFirebaseRepository:

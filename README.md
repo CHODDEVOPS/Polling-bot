@@ -1,6 +1,9 @@
 # Polling-bot
 A simple polling bot to check for available time slots on the termin.bremen.de website for registering apartments 
 
+# Broadcast and signup
+
+`make signup` polls telegram for pending `/start` requests. `make broadcast` notifies all of the users about available slots.
 
 # To open local dev shell
 

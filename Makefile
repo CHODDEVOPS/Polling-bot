@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 PYTHON := python3
 
 #* Directories with source code
-CODE = core
+CODE = broadcast common config
 
 #* Include environment variables if .env exists
 ifneq ("$(wildcard .env)","")
@@ -40,7 +40,12 @@ codestyle:
 shell:
 	poetry run ptipython --vi
 
-#* Run
-.PHONY: run
-run:
-	poetry run python3 -m core
+#* Broadcast
+.PHONY: broadcast
+broadcast:
+	poetry run python3 -m broadcast
+
+#* Signup
+.PHONY: signup
+signup:
+	poetry run python3 -m signup
