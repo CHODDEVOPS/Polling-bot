@@ -1,10 +1,9 @@
 import asyncio
+
 import firebase_admin
+import requests
 from firebase_admin import credentials, firestore
 from loguru import logger
-
-# from telegram.utils.request import Request
-from requests import Request
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.availability_notifier import TerminBremenScraper
@@ -45,8 +44,6 @@ async def broadcast_dates() -> None:
         message += "Time slots:\n"
         message += "–" + "\n–".join(slots) + "\n\n"
 
-    print("here")
-
     date_keyboard = [
         [
             InlineKeyboardButton(
@@ -57,10 +54,9 @@ async def broadcast_dates() -> None:
     ]
     reply_markup = InlineKeyboardMarkup(date_keyboard)
 
-    request = Request()
     bot_token = settings.bot.token
     for chat_id in user_list:
-        request.post(
+        requests.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
             data={
                 "chat_id": chat_id,
