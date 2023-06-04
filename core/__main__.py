@@ -1,24 +1,39 @@
+import asyncio
+import firebase_admin
+from firebase_admin import credentials, firestore
 from loguru import logger
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+# from telegram.utils.request import Request
+from requests import Request
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.availability_notifier import TerminBremenScraper
 from core.config import settings
+from core.repository.firebase import UserFirebaseRepository
 
 
-async def send_dates_as_buttons(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
-    if update.message is None:
-        logger.warning("Get an update with no message")
-        return
+class StatelessFirebaseRepository:
+    def __init__(self, credentials_path: str) -> None:
+        cred = credentials.Certificate(credentials_path)
+        self.app = firebase_admin.initialize_app(cred)
+        self.client = firestore.client()
 
-    chat_id = update.message.chat_id
+    def get_list_of_users(self) -> list[int]:
+        users_ref = self.client.collection("burger-users")
+        docs = users_ref.stream()
+        return [doc.to_dict() for doc in docs]
+
+
+async def broadcast_dates() -> None:
+    user_repo = UserFirebaseRepository(credentials=settings.firebase.credentials)
+    logger.info("Fetching user list...")
+
+    user_list = user_repo.get_list_of_users()
+
+    logger.info("Initialized scraper")
 
     # Call the parse_dates function and get the date_time_dict
     parser = TerminBremenScraper()
-    logger.info("Initialized scraper")
-
     date_time_dict = parser.run(page="polizei")
 
     message = """
@@ -30,6 +45,8 @@ async def send_dates_as_buttons(
         message += "Time slots:\n"
         message += "–" + "\n–".join(slots) + "\n\n"
 
+    print("here")
+
     date_keyboard = [
         [
             InlineKeyboardButton(
@@ -39,17 +56,19 @@ async def send_dates_as_buttons(
         ]
     ]
     reply_markup = InlineKeyboardMarkup(date_keyboard)
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=message,
-        reply_markup=reply_markup,
-    )
+
+    request = Request()
+    bot_token = settings.bot.token
+    for chat_id in user_list:
+        request.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            data={
+                "chat_id": chat_id,
+                "text": message,
+                "reply_markup": reply_markup.to_json(),
+            },
+        )
+    logger.info("Broadcasted dates to all users!")
 
 
-logger.info("Start!")
-
-app = ApplicationBuilder().token(settings.bot.token).build()
-app.add_handler(
-    CommandHandler("dates", send_dates_as_buttons),
-)
-app.run_polling()
+asyncio.run(broadcast_dates())

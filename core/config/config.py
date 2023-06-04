@@ -14,7 +14,10 @@ class GoogleSettings(BaseSettings):
         try:
             return json.load(open(self.application_credentials))
         except FileNotFoundError as exc:
-            msg = "Google credentials file `google.json` was not found. Please, put it into the project root"
+            msg = (
+                "Google credentials file `%s` was not found. Please, put it into the project root"
+                % self.application_credentials
+            )
             logger.error(msg)
             raise ValueError(msg) from exc
 
