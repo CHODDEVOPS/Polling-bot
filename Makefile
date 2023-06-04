@@ -36,6 +36,10 @@ codestyle:
 	black --config pyproject.toml $(CODE)
 
 
+.PHONY: shell
+shell:
+	poetry run ptipython --vi
+
 #* Run
 .PHONY: run
 run:
