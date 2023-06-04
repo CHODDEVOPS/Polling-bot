@@ -13,7 +13,7 @@ user_repo: UserRepository = UserFirebaseRepository(
 
 
 async def send_dates_as_buttons(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
+        update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     if update.message is None:
         logger.warning("Get an update with no message")
@@ -24,10 +24,15 @@ async def send_dates_as_buttons(
     user_repo.create_user(chat_id)
 
 
-logger.info("Start!")
+def run_polling() -> None:
+    logger.info("Start!")
 
-app = ApplicationBuilder().token(settings.bot.token).build()
-app.add_handler(
-    CommandHandler("start", send_dates_as_buttons),
-)
-app.run_polling()
+    app = ApplicationBuilder().token(settings.bot.token).build()
+    app.add_handler(
+        CommandHandler("start", send_dates_as_buttons),
+    )
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    run_polling()
