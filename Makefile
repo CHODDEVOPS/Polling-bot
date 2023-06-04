@@ -35,6 +35,9 @@ codestyle:
 	isort --settings-path pyproject.toml $(CODE)
 	black --config pyproject.toml $(CODE)
 
+.PHONY: export-requirements
+export-requirements:
+	poetry export -f requirements.txt --output requirements.txt
 
 .PHONY: shell
 shell:
