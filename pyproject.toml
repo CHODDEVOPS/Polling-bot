@@ -19,6 +19,7 @@ requests = "^2.29.0"
 bs4 = "^0.0.1"
 firebase = "^4.0.1"
 firebase-admin = "^6.1.0"
+tenacity = "^8.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -64,8 +64,8 @@ class UserFirebaseRepository(BaseFirebaseRepository, UserRepository):
 
     def create_user(self, chat_id: str) -> str:
         logger.debug("Creating user with chat_id {}", chat_id)
-        self.collection.document(chat_id).set({})
-        return chat_id
+        self.collection.document(str(chat_id)).set({})
+        return str(chat_id)
 
     def drop_collection(self) -> None:
         logger.debug(
