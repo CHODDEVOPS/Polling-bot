@@ -1,4 +1,7 @@
+from typing import Any
+
 import sys
+from collections.abc import Mapping
 from datetime import date, datetime, timedelta
 
 import requests
@@ -13,13 +16,13 @@ class TerminBremenScraper:
     URL1 = "https://termin.bremen.de/termine/"
     POLLING_INTERVAL = 60  # Polling interval in seconds
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dates_list = self.generate_dates_list()
         self.first_page = ""
         self.second_page = ""
         self.final_page = ""
 
-    def generate_dates_list(self):
+    def generate_dates_list(self) -> list[str]:
         """
         Generate a list containing the dates for the next 3 weeks to check for available time-slots.
         """
@@ -33,7 +36,7 @@ class TerminBremenScraper:
 
         return dates_list
 
-    def get_headers(self, cookie):
+    def get_headers(self, cookie: Mapping[Any, Any]) -> dict[str, str]:
         """
         Generate the headers for the request.
         """
@@ -56,7 +59,7 @@ class TerminBremenScraper:
             "sec-ch-ua-platform": '"Android"',
         }
 
-    def get_available_dates(self, page) -> dict[date, list[str]]:
+    def get_available_dates(self, page: str) -> dict[date, list[str]]:
         """
         Get the available dates and time slots from the website.
         """
@@ -102,7 +105,7 @@ class TerminBremenScraper:
 
         return self.parse_dates(final_page.text)
 
-    def parse_dates(self, page_content) -> dict[date, list[str]]:
+    def parse_dates(self, page_content: str) -> dict[date, list[str]]:
         """
         Parse the available dates and time slots from the HTML content.
         """
@@ -111,8 +114,7 @@ class TerminBremenScraper:
 
         # Find all h3 elements with the dates
         # date_elements = doc.find_all("h3", {"class": "ui-accordion-header"})
-        date_elements = doc.find_all("h3", {"title": True})
-        date_elements = date_elements[1:]
+        date_elements = doc.find_all("h3", {"title": True})[1:]
 
         # Dictionary for German day of the week to English
         german_to_english_days = {
@@ -169,7 +171,7 @@ class TerminBremenScraper:
             "Failed to retrieve dates after 10 trials."
         ),
     )
-    def run(self, page) -> dict[date, list[str]]:
+    def run(self, page: str) -> dict[date, list[str]]:
         """
         Run the scraper with tenacity retries (retry every 30 seconds 10 times).
         """

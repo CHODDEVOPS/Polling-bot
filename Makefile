@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 PYTHON := python3
 
 #* Directories with source code
-CODE = broadcast common config
+CODE = config broadcast signup
 
 #* Include environment variables if .env exists
 ifneq ("$(wildcard .env)","")

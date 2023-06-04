@@ -1,30 +1,12 @@
 import asyncio
 
-import firebase_admin
 import requests
-from firebase_admin import credentials, firestore
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from broadcast.availability_notifier import TerminBremenScraper
 from common.repository.firebase import UserFirebaseRepository
 from config import settings
-
-
-class StatelessFirebaseRepository:
-    def __init__(self, credentials_path: str) -> None:
-        cred = credentials.Certificate(credentials_path)
-        self.app = firebase_admin.initialize_app(cred)
-        self.client = firestore.client()
-
-    def get_list_of_users(self) -> list[int]:
-        users_ref = self.client.collection("burger-users")
-        docs = users_ref.stream()
-        return [doc.to_dict() for doc in docs]
-
-    def register_user(self, user_id: int) -> None:
-        users_ref = self.client.collection("burger-users")
-        users_ref.document(str(user_id)).set({"id": user_id}, merge=True)
 
 
 async def broadcast_dates() -> None:
