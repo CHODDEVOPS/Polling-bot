@@ -1,9 +1,9 @@
 from http.server import BaseHTTPRequestHandler
 
-import signup
+from signup.__main__ import run_polling
 
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
-        signup.run_polling()
+        run_polling()
         return
